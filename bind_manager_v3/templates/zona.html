@@ -1,0 +1,247 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<script>
+    $(function () {
+{%- if result %}
+	$('#zona_tabs li:eq(1) a').tab('show')
+{%- else %}
+	$('#zona_tabs li:eq(0) a').tab('show')
+{%- endif %}
+    })
+</script>
+	<nav class="navbar">
+	    <div class="navbar-left">
+		<ol class="breadcrumb">
+		    <li><a href="{{ url_for('index') }}">Bind Manager</a></li>
+		    <li><a href="{{ url_for('list') }}">Zone List</a></li>
+		    <li class="active">{{ zona }}</li>
+		</ol>
+	    </div>
+	    <div class="navbar-right"> 
+		<div class="input-group">
+		    <span class="input-group-addon">Search</span>
+		    <input id="filter" type="text" class="form-control" placeholder="Type here...">
+		</div>
+	    </div>
+	</nav>
+
+	<nav class="navbar">
+	    <div class="btn-group navbar-right">
+		  <a role="button" class="btn btn-default" data-toggle="modal" data-target="#Add"><img src="{{ url_for('static', filename='img/icons/add.png') }}"> Add</a>
+		  <a role="button" class="btn btn-default" data-toggle="modal" data-target="#Publish" {%- if not modlist %}disabled="disabled" {%- endif %}><img src="{{ url_for('static', filename='img/icons/check.png') }}"> Publish</a>
+	    </div>
+
+	    <ul class="nav nav-tabs navbar-left" role="tablist" id="zona_tabs">
+	  <li role="presentation" class="active"><a href="#Records" aria-controls="home" role="tab" data-toggle="tab">Records</a></li>
+        {%- if modlist %}
+          <li role="presentation"><a href="#Modifications" aria-controls="home" role="tab" data-toggle="tab">Modifications {%- if modlist %}<span class="badge">{{ modlist|count }}</span>{%- endif %}</a></li>
+        {%- endif %}
+	  <li role="presentation" style="display: none;" id="dnssec_tab"><a href="#DNSSEC" aria-controls="home" role="tab" data-toggle="tab">DNSSEC</a></li>
+	    </ul>
+	</nav>
+
+	    
+	<div class="tab-content">
+	    <div role="tabpanel" class="tab-pane active" id="Records">
+		<table class="table table-condensed table-hover">
+		    <thead>
+			<tr>
+			    <th>RR</th>
+			    <th>Type</th>
+			    <th>TTL</th>
+			    <th colspan=2>Data</th>
+			</tr>
+		    </thead>
+		    <tbody class="searchable">
+			{% for record in record_list %}
+			{%- if record.type == "DNSKEY" %}
+			<script type="text/javascript">
+				document.getElementById('dnssec_tab').style.display = "block";
+			</script>
+			{%- endif %}
+			{% if record.type != "RRSIG" and record.type != "TYPE50" and record.type != "TYPE51" and record.type != "TYPE65534" and record.type != "DNSKEY" %}
+			<tr>
+			    <!-- <td>{{record.id}}</td> -->
+			    <td>{{ record.name }}</a></td>
+			    <td>{{ record.type }}</td>
+			    <td>{{ record.ttl }}</td>
+          <td {%- if record.type == "SOA" or record.type == "NS" %} colspan="2" {%- endif %}>{{ record.data }}</td>
+          <form action="" method=post role="form" class="form">
+            <input type="hidden" name="operation" value="add_unpub">
+            <input type="hidden" name="rr" value="{{ record.name  }}">
+            <input type="hidden" name="type" value="{{ record.type  }}">
+            <input type="hidden" name="ttl" value="{{ record.ttl  }}">
+            <input type="hidden" name="data" value="{{ record.data  }}">
+            <input type="hidden" name="action" value="del">
+          {%- if record.type != "SOA" and record.type != "NS" %}
+          <td><button type="submit" role="button" class="btn btn-default"><img src="{{ url_for('static', filename='img/icons/del.png') }}" alt="Delete"></button></td>
+          {%- endif %}
+          </form>
+			</tr>
+			{%- endif %}
+			{% endfor %}
+		    </tbody>
+		</table>
+	    </div>
+	    <div role="tabpanel" class="tab-pane" id="Modifications">
+		<table class="table table-condensed table-hover">
+		    <thead>
+			<tr>
+			    <th>Username</th>
+			    <th>Action</th>
+			    <th>RR</th>
+			    <th>Type</th>
+			    <th>TTL</th>
+			    <th colspan=2 >Data</th>
+			</tr>
+		    </thead>
+		    <tbody class="searchable">
+			{% for item in modlist %}
+			<tr>
+			    <!-- {{ item.id }} -->
+			    <td>{{ item.username }}</td>
+			    <td>{{ item.action }}</td>
+          <td>{{ item.rr }}{%- if item.action == "add" %}.{{ zona }}.{%- endif %}</td>
+			    <td>{{ item.type }}</td>
+			    <td>{{ item.ttl }}</td>
+			    <td>{{ item.data }}</td>
+			    <td>
+				<form action="" method=post role="form" class="form">
+				    <input type="hidden" name="del_id" value="{{ item.id }}">
+				    <input type="hidden" name="action" value="del">
+				    <input type="hidden" name="operation" value="del_unpub">
+				    <button type="submit" role="button" class="btn btn-default"><img src="{{ url_for('static', filename='img/icons/del.png') }}" alt="Delete"></button>
+				</form>
+			    </td>
+			</tr>
+			{% endfor %}
+		    </tbody>
+		</table>
+	    </div>
+	    <div role="tabpanel" class="tab-pane" id="DNSSEC">
+		<table class="table table-condensed condensed table-hover small">
+		    <thead>
+			<tr>
+			    <th>RR</th>
+			    <th>Type</th>
+			    <th>TTL</th>
+			    <th colspan=2>Data</th>
+			</tr>
+		    </thead>
+		    <tbody class="searchable">
+			{% for record in record_list %}
+			{% if record.type == "RRSIG" or record.type == "TYPE50" or record.type == "TYPE51" or record.type == "TYPE65534" or record.type == "DNSKEY" %}
+			<tr>
+			    <!-- <td>{{record.id}}</td> -->
+			    <td>{{ record.name }}</a></td>
+			    {%- if record.type == "TYPE50" %}
+			    <td>NSEC3</td>
+		            {%- elif record.type == "TYPE51" %}
+			    <td>NSEC3PARAM</td>
+		            {%- else %}
+			    <td>{{ record.type }}</td>
+			    {%- endif %}
+			    <td>{{ record.ttl }}</td>
+				  <td colspan="2">{{ record.data }}</td>
+			</tr>
+			{%- endif %}
+			{% endfor %}
+		    </tbody>
+		</table>
+	    </div>
+
+	</div>
+
+<!-- Modal Add -->
+	<div class="modal fade bs-example-modal-lg" id="Add" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	  <div class="modal-dialog">
+	    <div class="modal-content">
+	      <div class="modal-header">
+		<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+		<h4 class="modal-title" id="myModalLabel">Add Record</h4>
+	      </div>
+	      <div class="modal-body">
+		
+
+        <form action="" method=post role="form" class="form">
+	    <div class="form-group">
+		<label for="RR" class="col-sm-1 control-label">RR</label>
+		<div class="input-group input-group-sm">
+		    <input type="text" id="rr" name="rr" class="form-control" id="RR" placeholder="Record"><span class="input-group-addon">.{{ zona }}</span>
+		</div>
+	    </div>
+	    <div class="form-group">
+		    <label for="Type" class="col-sm-1 control-label">Type</label>
+		<div class="input-group input-group-sm">
+			<select name="type" id="type" class="form-control">
+			    <option value="A">A</option>
+			    <option value="CNAME">CNAME</option>
+			    <option value="SRV">SRV</option>
+			    <option value="NS">NS</option>
+			    <option value="MX">MX</option>
+			    <option value="TXT">TXT</option>
+			    <option value="SPF">SPF</option>
+			    <option value="DNAME">DNAME</option>
+			</select>
+		</div>
+	    </div>
+	    <div class="form-group">
+
+		<label for="TTL" class="col-sm-1 control-label">TTL</label>
+		<div class="input-group input-group-sm">
+		  <input type="text" id="type" name="ttl" class="form-control" id="TTL" placeholder="TTL" value="1800" required>
+		</div>
+	    </div>
+	    <div class="form-group">
+		<label for="Data" class="col-sm-1 control-label">Data</label>
+		<div class="input-group input-group-sm">
+		  <input type="text" id="type" name="data" class="form-control" id="Data" placeholder="Data" required>
+		  <input type="hidden" name="action" value="add">
+		  <input type="hidden" name="operation" value="add_unpub">
+		</div>
+	    </div>
+
+	      </div>
+	      <div class="modal-footer">
+		<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+		<button type="submit" class="btn btn-primary">Add</button>
+	      </div>
+        </form>
+	    </div>
+	  </div>
+	</div>
+
+<!-- /Modal Add --> 
+
+<!-- Modal Publish -->
+
+	<div class="modal fade bs-example-modal-lg" id="Publish" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	  <div class="modal-dialog">
+	    <div class="modal-content">
+	      <div class="modal-header">
+		<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+		<h4 class="modal-title" id="myModalLabel">Publish</h4>
+	      </div>
+	    <form action="" method=post role="form" class="form">
+	      <div class="modal-body">
+          <div class="input-group input-group-sm">Do you want to publish the zone?</div>
+		  <input type="hidden" name="operation" value="publish">
+
+
+
+	      </div>
+	      <div class="modal-footer">
+		<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+		<button type="submit" class="btn btn-primary">Publish</button>
+	      </div>
+	    </form>
+        </form>
+	    </div>
+	  </div>
+	</div>
+
+
+<!-- /Modal Publish -->
+
+{% endblock %}

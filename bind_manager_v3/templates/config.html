@@ -1,0 +1,48 @@
+{% extends "layout.html" %}	
+{% block content %}
+	<ol class="breadcrumb">
+	    <li class="active">Configuration</li>
+	</ol>
+	<table class="table">
+	    <tbody>
+        <tr>
+            <td>Username</td>
+            <td>{{ session['username'] }}</td>
+        </tr>
+      <form action="" method="post" role="form" class="form">
+      <tr>
+        <td>Change Password</td>
+          <td>
+                {% if alert == "blank" %}
+                  <div class="alert alert-danger alert-dismissable">
+                    <button type="button" class="close" data-dismiss="alert">&times;</button>
+                    New password or confirmation is blank
+                  </div>
+                {% elif alert == "mismatch" %}
+                  <div class="alert alert-danger alert-dismissable">
+                    <button type="button" class="close" data-dismiss="alert">&times;</button>
+                      New password and confirmation mismatch!
+                  </div>
+                {% elif alert == "password_changed" %}
+                  <div class="alert alert-success alert-dismissable">
+                    <button type="button" class="close" data-dismiss="alert">&times;</button>
+                      Password changed
+                  </div>
+                {% endif %}
+                <input type="password" name="new_password" class="form-control" placeholder="New Password" required>
+                <input type="password" name="confirm_password" class="form-control" placeholder="Confirm Password" required>
+                <input type="hidden" name="operation" value="change_password">
+          </td>
+      </tr>
+      <tr>
+        <td colspan = "2">
+          <button type="submit" class="btn btn-primary">Change</button>
+        </td>
+      </tr>
+      </form>
+    </tbody>
+  </table>
+
+
+
+{% endblock %}

@@ -1,0 +1,65 @@
+<!doctype html>
+<html>
+    <head>
+	<title>Bind Manager v3 - {{ title if title != None }}</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link href="//cdn.corpam.com.ar/bootstrap/stable/css/bootstrap.min.css" rel="stylesheet">
+	<link href="//cdn.corpam.com.ar/bootstrap/stable/css/bootstrap-theme.min.css" rel="stylesheet">
+	<script src="//cdn.corpam.com.ar/common/stable/js/jquery.min.js"></script>
+	<script src="//cdn.corpam.com.ar/bootstrap/stable/js/bootstrap.min.js"></script>
+	<script src="//cdn.corpam.com.ar/bootstrap/stable/js/bootstrap-list-filter.src.js"></script>
+	
+
+	<script>
+	function showDiv(div) {
+	    document.getElementById(div).style.display = "block";
+	    //document.getElementById('ConfirmDiv').style.position = "absolute";
+	}
+	function hideDiv(div) {
+	    document.getElementById(div).style.display = "none";
+	}
+	</script>
+	<script>
+	$(document).ready(function () {
+	    (function ($) {
+		$('#filter').keyup(function () {
+		    var rex = new RegExp($(this).val(), 'i');
+		    $('.searchable tr').hide();
+		    $('.searchable tr').filter(function () {
+			return rex.test($(this).text());
+		    }).show();
+		})
+	    }(jQuery));
+	});
+
+	</script>
+    </head>
+    <body>
+	<div class="container"> 
+	    <div class="collapse navbar-collapse navbar-ex1-collapse">
+		<nav class="navbar navbar-default" role="navigation">
+				    <a class="navbar-brand" href="{{ url_for('index') }}">Bind Manager</a>
+				    {% if session['username'] %}
+				    <ul class="nav navbar-nav navbar-right navbar-collapse">
+					<li class="dropdown">
+					    <a href="#" class="dropdown-toggle" data-toggle="dropdown">{{ session['username'] }}<b class="caret"></b></a>
+					    <ul class="dropdown-menu">
+                {% if session['role'] == "admin" %}
+                <li><a href="{{ url_for('admin') }}">Administration</a></li>
+                {% endif %}
+                <li><a href="{{ url_for('config') }}">Configuration</a></li>
+                <li role="presentation" class="divider"></li>
+						    <li><a href="{{ url_for('logout') }}">Logout</a></li>
+					    </ul>
+					</li>
+				    </ul>
+				    {% endif %}
+		</nav>
+	    </div>
+		<div class="jumbotron">
+		    {% block content %}
+		    {% endblock %}
+		</div>
+	</div>
+    </body>
+</html>

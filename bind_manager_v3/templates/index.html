@@ -1,0 +1,35 @@
+{% extends "layout.html" %}	
+{% block content %}
+	<ol class="breadcrumb">
+	    <li class="active">Bind Manager</li>
+	</ol>
+	<table class="table">
+	    <!--
+	    <thead>
+		<tr>
+		    <th>Key</th>
+		    <th>Value</th>
+		</tr>
+	    </thead>
+	    -->
+	    <tbody>
+		<tr>
+		    <td>Username</td>
+		    <td>{{ username }}</td>
+		</tr>
+		<tr>
+		    <td>Zone Quantity</td>
+		    <td>{{ zone_qty }}</td>
+		</tr>
+	    </tbody>
+	</table>
+    <div class="btn-group btn-group-lg btn-group-center">
+          <a class="btn btn-default" href="{{ url_for('list') }}">Zone List</a>
+          <a class="btn btn-default" href="{{ url_for('pools') }}">Pool List</a>
+    </div>
+
+    </div>
+
+
+
+{% endblock %}
